@@ -8,19 +8,19 @@
 #ifndef SRC_PETRINET_PLACEBASE_H_
 #define SRC_PETRINET_PLACEBASE_H_
 
-#include <memory>
+#include <any>
 
-class PlaceBase {
+class PlaceBase
+{
+private:
+    /* data */
 public:
-	PlaceBase(){}
-	virtual ~PlaceBase(){};
-	virtual int length() = 0;
-
-	void input_token(std::unique_ptr<void>) = 0;
-
-	std::unique_ptr<void> output_token() = 0;
-
-
+    // PlaceBase(/* args */);
+    virtual void input_tokens(std::any&&) = 0;
+    virtual std::any output_tokens() = 0;
+    virtual int size() = 0;
+    virtual ~PlaceBase(){};
 };
+
 
 #endif /* SRC_PETRINET_PLACE_H_ */

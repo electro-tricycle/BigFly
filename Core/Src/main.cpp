@@ -26,6 +26,7 @@
 #include <string>
 #include <memory>
 #include <tuple>
+#include <any>
 #include "PetriNet/Transition.h"
 #include "PetriNet/Place.h"
 /* USER CODE END Includes */
@@ -67,22 +68,11 @@ static void MX_GPIO_Init(void);
   * @retval int
   */
 
-std::tuple<int,int> func(int, int){
-	std::tuple<int,int> a = {1, 1};
-	return a;
-}
 
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-  std::shared_ptr<Place<int>> a = std::make_shared<Place<int>>();
-  std::shared_ptr<Place<int>> b = std::make_shared<Place<int>>();
 
-  a->input_token(123);
-  b->input_token(231);
-//  a->input_token(std::move(std::make_unique(__args)))
-  Transition<std::tuple<int, int>, std::tuple<int,int>> T{{a, b},{a, b}, func};
-  T.run();
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
