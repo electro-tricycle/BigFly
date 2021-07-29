@@ -26,9 +26,9 @@ public:
             this->cl.push_back(data);
     }
     
-    Eigen::Vector3i getVector(int i)
+    Eigen::Vector3i getVector()
     {
-        return cl[i];
+        return cl;
     }
 
     int size()
@@ -39,12 +39,12 @@ public:
 
     void input_tokens(std::vector<Eigen::Vector3i> output_weights,int i)
     {
-        cl[i] += output_weights[i];
+        cl += output_weights[i];
     }
 
     //输出token
     void output_tokens(std::vector<Eigen::Vector3i> input_weights,int i)
     {
-        cl[i] -= input_weights[i];
+        cl -= input_weights[i];
     }
 };
