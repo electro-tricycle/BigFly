@@ -18,6 +18,7 @@ public:
     // PlaceBase(/* args */);
     virtual void input_tokens(std::any&&) = 0;
     virtual std::any output_tokens() = 0;
+    virtual std::any output_tokens(std::vector<int>) = 0;
     virtual int size() = 0;
     virtual ~PlaceBase(){};
 };
