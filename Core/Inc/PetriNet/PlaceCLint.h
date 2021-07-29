@@ -21,9 +21,9 @@ public:
     Place (const Place & other) = delete;
     Place & operator = (const Place& other) = delete;
     //Place传递数值构造
-    Place(Eigen::Vector3i data)
+    Place(int a, int b, int c)
     {
-            this->cl.push_back(data);
+            this -> cl = Eigen::Vector3i(a,b,c);
     }
     
     Eigen::Vector3i getVector()
