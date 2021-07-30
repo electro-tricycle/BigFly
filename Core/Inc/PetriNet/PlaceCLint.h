@@ -1,7 +1,18 @@
+/*
+ * PlaceCLint.h
+ *
+ *  Created on: 2021年7月30日
+ *      Author: jay chou
+ */
+
+#ifndef INC_PETRINET_PLACECLINT_H_
+#define INC_PETRINET_PLACECLINT_H_
+
 #pragma once
 #include "PlaceBase.h"
- 
-class Place 
+#include <Eigen/Dense>
+
+class Place
 //Place color Int 类
 {
 private:
@@ -23,9 +34,9 @@ public:
     //Place传递数值构造
     Place(int a, int b, int c)
     {
-            this -> cl = Eigen::Vector3i(a,b,c);
+            this -> cl = std::move(Eigen::Vector3i(a,b,c));
     }
-    
+
     Eigen::Vector3i getVector()
     {
         return cl;
@@ -48,3 +59,8 @@ public:
         cl -= input_weights[i];
     }
 };
+
+
+
+
+#endif /* INC_PETRINET_PLACECLINT_H_ */
