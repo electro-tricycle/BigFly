@@ -53,16 +53,16 @@ public:
         return cl.size();
     }
     //传入tokens，计算place中color的变化同时传入对应数据
-    void input_tokens(std::vector<Eigen::Vector3i> output_weights, int i, std::any &&input)
+    void input_tokens(Eigen::Vector3i output_weights, std::any &&input)
     {
-        cl += output_weights[i];
+        cl += output_weights;
         this->array.push(std::move(input));
     }
 
     //输出token，计算place中color的变化同时传出对应数据
-    std::any output_tokens(std::vector<Eigen::Vector3i> input_weights, int i)
+    std::any output_tokens(Eigen::Vector3i input_weights)
     {
-        cl -= input_weights[i];
+        cl -= input_weights;
         std::any output = std::move(this->array.front());
         this->array.pop();
         return output;
