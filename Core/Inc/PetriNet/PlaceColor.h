@@ -15,10 +15,10 @@
 class Place
 // Place color 类
 {
-  private:
-    std::string                  name;
-    std::vector<Eigen::Vector3i> cl;
-    std::queue<std::any>         array;
+private:
+    std::string name;
+    Eigen::Vector3i cl;
+    std::queue<std::any> array;
 
   public:
     Place() {}
@@ -34,37 +34,35 @@ class Place
     // Place传递数值构造
     Place(Eigen::Vector3i(data), std::any&& input)
     {
-        this->cl.push_back(std::move(data));
+        this->cl = std::move(data);
         this->array.push(std::move(input));
     }
-    //获取
-    Eigen::Vector3i getVector(int i)
+    //返回Place中的颜色token
+    Eigen::Vector3i getVector()
     {
-        return cl[i];
+        return cl;
     }
-    //获取队列内容
+    //返回Place中的队列
     std::queue<std::any> getArray()
     {
         return array;
     }
-    //获取color vector 的长度
+    //返回size
     int size()
     {
         return cl.size();
     }
-    //输入token
-    void input_tokens(std::vector<Eigen::Vector3i> output_weights,
-        int                                        i,
-        std::any&&                                 input)
+    //传入tokens，计算place中color的变化同时传入对应数据
+    void input_tokens(Eigen::Vector3i output_weights, std::any &&input)
     {
-        cl[i] += output_weights[i];
+        cl += output_weights;
         this->array.push(std::move(input));
     }
 
-    //输出token
-    std::any output_tokens(std::vector<Eigen::Vector3i> input_weights, int i)
+    //输出token，计算place中color的变化同时传出对应数据
+    std::any output_tokens(Eigen::Vector3i input_weights)
     {
-        cl[i] -= input_weights[i];
+        cl -= input_weights;
         std::any output = std::move(this->array.front());
         this->array.pop();
         return output;
