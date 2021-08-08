@@ -8,31 +8,31 @@
 #ifndef INC_PETRINET_PLACECOLOR_H_
 #define INC_PETRINET_PLACECOLOR_H_
 
+#include <any>
+#include <queue>
+#include <string>
+#include <vector>
 class Place
-//Place color 类
+// Place color 类
 {
-private:
-    std::string name;
+  private:
+    std::string                  name;
     std::vector<Eigen::Vector3i> cl;
-    std::queue<std::any> array;
+    std::queue<std::any>         array;
 
-public:
-    Place()
-    {
-    }
+  public:
+    Place() {}
     // 命名构造
     Place(std::string name)
     {
         this->name = name;
     }
-    ~Place()
-    {
-    }
+    ~Place() {}
     // // 禁止复制拷贝
-    Place(const Place &other) = delete;
-    Place &operator=(const Place &other) = delete;
-    //Place传递数值构造
-    Place(Eigen::Vector3i(data), std::any &&input)
+    Place(const Place& other) = delete;
+    Place& operator=(const Place& other) = delete;
+    // Place传递数值构造
+    Place(Eigen::Vector3i(data), std::any&& input)
     {
         this->cl.push_back(std::move(data));
         this->array.push(std::move(input));
@@ -53,7 +53,9 @@ public:
         return cl.size();
     }
     //输入token
-    void input_tokens(std::vector<Eigen::Vector3i> output_weights, int i, std::any &&input)
+    void input_tokens(std::vector<Eigen::Vector3i> output_weights,
+        int                                        i,
+        std::any&&                                 input)
     {
         cl[i] += output_weights[i];
         this->array.push(std::move(input));
@@ -68,7 +70,5 @@ public:
         return output;
     }
 };
-
-
 
 #endif /* INC_PETRINET_PLACECOLOR_H_ */
