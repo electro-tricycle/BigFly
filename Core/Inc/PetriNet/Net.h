@@ -1,22 +1,30 @@
 #pragma once
 
-#include <string>
-#include <memory>
-#include <queue>
 #include "PetriNet/Transition.h"
 #include "PetriNet/TransitionBase.h"
+#include <memory>
+#include <list>
+#include <string>
 
-class Net
-{
-private:
-  std::priority_queue<std::shared_ptr<TransitionBase>> m_transitions;
-
-public:
+class Net {
+  private:
+    std::list<std::shared_ptr<TransitionBase>> m_transitions;
     Net();
-    Net(std::string name);
+    Net(const Net&) = delete;
+    Net& operator=(const Net&) = delete;
     ~Net();
 
+  private:
+    static Net m_Instance;
+
+  public:
+    static Net& get_instance()
+    {
+        return m_Instance;
+    }
     void add_transition(std::shared_ptr<TransitionBase> pTransition);
+    void del_transition(std::shared_ptr<TransitionBase> pTransition);
+    void run();
 };
 
 

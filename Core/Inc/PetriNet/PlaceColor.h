@@ -5,68 +5,100 @@
  *      Author: jay chou
  */
 
-#ifndef INC_PETRINET_PLACECOLOR_H_
-#define INC_PETRINET_PLACECOLOR_H_
-
+#pragma once
+#include "Eigen/Core"
+#include "Eigen/Dense"
+#include "PetriNet/PlaceVectorBase.h"
 #include <any>
-#include <queue>
 #include <string>
-#include <vector>
-class Place
-// Place color 类
-{
-private:
-    std::string name;
-    Eigen::Vector3i cl;
-    std::queue<std::any> array;
+#include <tuple>
+#include <queue>
+
+template <int dim>
+class PlaceColor : public PlaceVectorBase<dim>{
+  private:
+    std::string name = "";
+    // Eigen::Vector3i      cl;
+    Eigen::Matrix<int, dim, 1>            cl;  // dim代表颜色维度数目
+    std::array<std::queue<std::any>, dim> array;  // 一共有dim组存数据的queue
 
   public:
-    Place() {}
+    PlaceColor() {}
     // 命名构造
-    Place(std::string name)
+    PlaceColor(std::string name)
     {
         this->name = name;
     }
-    ~Place() {}
+    ~PlaceColor() {}
     // // 禁止复制拷贝
-    Place(const Place& other) = delete;
-    Place& operator=(const Place& other) = delete;
-    // Place传递数值构造
-    Place(Eigen::Vector3i(data), std::any&& input)
+    PlaceColor(const PlaceColor& other) = delete;
+    PlaceColor& operator=(const PlaceColor& other) = delete;
+
+    // PlaceColor传递数值构造
+    PlaceColor(Eigen::Matrix<int, dim, 1>       data,
+        std::array<std::queue<std::any>, dim>&& inputs)
     {
-        this->cl = std::move(data);
-        this->array.push(std::move(input));
+        this->cl    = std::move(data);
+        this->array = std::move(inputs);
     }
-    //返回Place中的颜色token
-    Eigen::Vector3i getVector()
-    {
-        return cl;
-    }
-    //返回Place中的队列
-    std::queue<std::any> getArray()
-    {
-        return array;
-    }
-    //返回size
+    // //返回PlaceColor中的颜色token
+    // Eigen::Vector3i getVector()
+    // {
+    //     return cl;
+    // }
+    // //返回PlaceColor中的队列
+    // std::queue<std::any> getArray()
+    // {
+    //     return array;
+    // }
+
+    // PlaceBase 接口
     int size()
     {
-        return cl.size();
+        assert(false);  // 未实现此函数
     }
-    //传入tokens，计算place中color的变化同时传入对应数据
-    void input_tokens(Eigen::Vector3i output_weights, std::any &&input)
+    void input_tokens(std::any&&)
     {
-        cl += output_weights;
-        this->array.push(std::move(input));
+        assert(false);  // 未实现此函数
+    };
+    std::any output_tokens()
+    {
+        assert(false);  // 未实现此函数
+    };
+
+    //传入tokens，计算PlaceColor中color的变化同时传入对应数据
+    void input_tokens(Eigen::Matrix<int, dim, 1> weights,
+        std::queue<std::any>&&                   inputs)
+    {
+        for (int index = 0; index < dim; ++index) {
+            if (weights(index, 0) != 0) {
+                for (int i = 0; i < weights(index, 0); ++i) {
+                    this->array[index].push(std::move(
+                        inputs.front()));  // 要求数据的排列是按照颜色的顺序。
+                    inputs.pop();
+                }
+            }
+        }
+        cl += weights;
     }
 
-    //输出token，计算place中color的变化同时传出对应数据
-    std::any output_tokens(Eigen::Vector3i input_weights)
+    //输出token，计算PlaceColor中color的变化同时传出对应数据
+    std::queue<std::any> output_tokens(Eigen::Matrix<int, dim, 1> weights)
     {
-        cl -= input_weights;
-        std::any output = std::move(this->array.front());
-        this->array.pop();
-        return output;
+        std::queue<std::any> outputs;
+        cl -= weights;
+        for (int idx = 0; idx < dim; ++idx) {
+            if (weights(idx, 0) != 0) {
+                outputs.push(std::move(this->array[idx].front()));
+                this->array[idx].pop();
+            }
+        }
+        return std::move(outputs);
+    }
+
+    Eigen::Matrix<int, dim, 1> vector_size()
+    {
+        return this->cl;
     }
 };
 
-#endif /* INC_PETRINET_PLACECOLOR_H_ */

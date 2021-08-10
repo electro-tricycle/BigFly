@@ -36,14 +36,14 @@ template <typename T> class PlaceOOP : public PlaceBase {
         return output;
     }
 
-    std::any output_tokens(std::vector<int>)
-    {
-        assert(false);  // 没有实现的函数
-    }
-    std::any peek(unsigned int idx = 0)
-    {
+    // std::any output_tokens(std::vector<int>)
+    // {
+    //     assert(false);  // 没有实现的函数
+    // }
+    // std::any peek(unsigned int idx = 0)
+    // {
         
-    }
+    // }
 
     int size()
     {

@@ -5,62 +5,62 @@
  *      Author: jay chou
  */
 
-#ifndef INC_PETRINET_PLACECLINT_H_
-#define INC_PETRINET_PLACECLINT_H_
-
 #pragma once
-#include "PlaceBase.h"
+#include "PetriNet/PlaceVectorBase.h"
 #include <Eigen/Dense>
-
-class Place
-//Place color Int 类
+template <int dim>
+class PlaceCLInt : public PlaceVectorBase<dim>
+// Place color Int 类
 {
-private:
-    std::string name;
-    Eigen::Vector3i cl;
-public:
-    Place()
-    {}
-    // 命名构造
-    Place(std::string name)
-    {
-        this -> name = name;
-    }
-    ~Place()
-    {}
-    // // 禁止复制拷贝
-    Place (const Place & other) = delete;
-    Place & operator = (const Place& other) = delete;
-    //Place传递数值构造
-    Place(int a, int b, int c)
-    {
-            this -> cl = std::move(Eigen::Vector3i(a,b,c));
-    }
+  private:
+    std::string                name = " ";
+    Eigen::Matrix<int, dim, 1> cl;
 
-    Eigen::Vector3i getVector()
+  public:
+    PlaceCLInt() {}
+    // 命名构造
+    PlaceCLInt(std::string name)
     {
-        return cl;
+        this->name = name;
+    }
+    ~PlaceCLInt() {}
+    // // 禁止复制拷贝
+    PlaceCLInt(const PlaceCLInt& other) = delete;
+    PlaceCLInt& operator=(const PlaceCLInt& other) = delete;
+    // Place传递数值构造
+    PlaceCLInt(Eigen::Matrix<int, dim, 1> nums)
+    {
+        this->cl = nums;
     }
 
     int size()
     {
-        return cl.size();
+        assert(false);  // 未实现
     }
 
-
-    void input_tokens(std::vector<Eigen::Vector3i> output_weights,int i)
+    void input_tokens(std::any&&)
     {
-        cl += output_weights[i];
+        assert(false);  // 未实现
+    };
+    std::any output_tokens()
+    {
+        assert(false);  // 未实现
+    };
+
+    void input_tokens(Eigen::Matrix<int, dim, 1> weights,
+        std::queue<std::any>&&)
+    {
+        cl += weights;
     }
 
     //输出token
-    void output_tokens(std::vector<Eigen::Vector3i> input_weights,int i)
+    std::queue<std::any> output_tokens(Eigen::Matrix<int, dim, 1> weights)
     {
-        cl -= input_weights[i];
+        cl -= weights;
+        std::queue<std::any> null;
+        return null;
+    }
+    Eigen::Matrix<int, dim, 1> vector_size(){
+        return this->cl;
     }
 };
-
-
-
-
-#endif /* INC_PETRINET_PLACECLINT_H_ */

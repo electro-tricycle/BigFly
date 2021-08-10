@@ -146,7 +146,7 @@ ObjCSpaceBeforeProtocolList:	true
  
  
 # 在call(后对函数调用换行的penalty
-PenaltyBreakBeforeFirstCallParameter:	19
+PenaltyBreakBeforeFirstCallParameter:	100
 # 在一个注释中引入换行的penalty
 PenaltyBreakComment:	300
 # 第一次在<<前换行的penalty

@@ -7,7 +7,7 @@ class Place : public PlaceBase
 {
   private:
     int         data = 0;
-    std::string name;
+    std::string name = "";
 
   public:
     Place() {}
@@ -24,7 +24,6 @@ class Place : public PlaceBase
     // 禁止复制拷贝
     Place(const Place& other) = delete;
     Place& operator=(const Place& other) = delete;
-    // Place传递数值构造
 
     int size()
     {
@@ -41,15 +40,16 @@ class Place : public PlaceBase
         --data;
         return;
     }
-    std::any output_tokens(std::vector<int>)
-    {
-        assert(false);  // 没有实现的函数
-    }
 
-    std::any peek(unsigned int idx = 0)
-    {
-        assert(false);  // 没有实现的函数
-    }
+    // std::any output_tokens(std::vector<int>)
+    // {
+    //     assert(false);  // 没有实现的函数
+    // }
+
+    // std::any peek(unsigned int idx = 0)
+    // {
+    //     assert(false);  // 没有实现的函数
+    // }
 
     // //输出token
     // int output_tokens()
