@@ -8,30 +8,61 @@
 #pragma once
 #include "PetriNet/PlaceVectorBase.h"
 #include <Eigen/Dense>
+#include <map>
+#include <memory>
+
 template <int dim>
 class PlaceCLInt : public PlaceVectorBase<dim>
 // Place color Int 类
 {
   private:
-    std::string                name = " ";
-    Eigen::Matrix<int, dim, 1> cl;
+    Eigen::Matrix<int, dim, 1>                                      cl;
+    static std::map<unsigned int, std::shared_ptr<PlaceCLInt<dim>>> m_instances;
+    PlaceCLInt(unsigned int ID) : PlaceVectorBase<dim>(ID) {}
+    PlaceCLInt(unsigned int ID, Eigen::Matrix<int, dim, 1> cl)
+        : PlaceVectorBase<dim>(ID)
+    {
+        this->cl = cl;
+    }
 
   public:
-    PlaceCLInt() {}
-    // 命名构造
-    PlaceCLInt(std::string name)
+    static std::shared_ptr<PlaceCLInt<dim>> get_instance(unsigned int ID)
     {
-        this->name = name;
+        if (m_instances.find(ID) == m_instances.end()) {
+            // 没找到
+            auto pointer = std::shared_ptr<PlaceCLInt<dim>>(new PlaceCLInt<dim>(ID));
+            m_instances.insert(
+                std::pair<unsigned int, std::shared_ptr<PlaceCLInt<dim>>>(ID, pointer));
+            return pointer;
+        }
+        else {
+            auto pointer = m_instances.at(ID);
+            return pointer;
+        }
     }
+    static std::shared_ptr<PlaceCLInt<dim>> get_instance(unsigned int ID, Eigen::Matrix<int, dim, 1> cl)
+    {
+        auto pointer = std::shared_ptr<PlaceCLInt<dim>>(new PlaceCLInt<dim>(ID, cl));
+        m_instances.insert(
+            std::pair<unsigned int, std::shared_ptr<PlaceCLInt<dim>>>(ID, pointer));
+        return pointer;
+    }
+
+    static void del_instance(unsigned int ID)
+    {
+        for (auto iter = m_instances.begin(); iter != m_instances.end();
+             ++iter) {
+            if ((*iter).first == ID) {
+                m_instances.erase(iter);
+                break;
+            }
+        }
+    }
+
     ~PlaceCLInt() {}
     // // 禁止复制拷贝
     PlaceCLInt(const PlaceCLInt& other) = delete;
     PlaceCLInt& operator=(const PlaceCLInt& other) = delete;
-    // Place传递数值构造
-    PlaceCLInt(Eigen::Matrix<int, dim, 1> nums)
-    {
-        this->cl = nums;
-    }
 
     int size()
     {
@@ -60,7 +91,11 @@ class PlaceCLInt : public PlaceVectorBase<dim>
         std::queue<std::any> null;
         return null;
     }
-    Eigen::Matrix<int, dim, 1> vector_size(){
+    Eigen::Matrix<int, dim, 1> vector_size()
+    {
         return this->cl;
     }
 };
+template <int dim>
+std::map<unsigned int, std::shared_ptr<PlaceCLInt<dim>>>
+    PlaceCLInt<dim>::m_instances;

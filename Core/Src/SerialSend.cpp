@@ -1,0 +1,6 @@
+#include "PetriNet/Net.h"
+#include "PetriNet/Transition_color.h"
+#include "PetriNet/TransitionCLint.h"
+#include "PetriNet/PlaceBase.h"
+#include "PetriNet/PlaceColor.h"
+#include "PetriNet/PlaceCLint.h"

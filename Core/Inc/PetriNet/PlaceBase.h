@@ -13,9 +13,13 @@
 
 class PlaceBase {
   private:
-    /* data */
+    unsigned int ID;
+
   public:
-    // PlaceBase(/* args */);
+    PlaceBase(unsigned int ID)
+    {
+        this->ID = ID;
+    }
     virtual void     input_tokens(std::any&&) = 0;
     virtual std::any output_tokens()          = 0;
     virtual int      size()                   = 0;

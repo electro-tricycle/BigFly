@@ -22,9 +22,10 @@ template <int dim> class TransitionColor : public TransitionBase {
     std::queue<std::any>                    m_output_tokens;
     std::function<void(std::queue<std::any>&&, std::queue<std::any>&)> m_func;
     std::function<bool(void)> m_is_completed_func;
+    static std::map<unsigned int, std::shared_ptr<TransitionColor<dim>>> m_instances;
 
-  public:
-    TransitionColor(std::vector<PlacePoint>     input_places,
+    TransitionColor(unsigned int                ID,
+        std::vector<PlacePoint>                 input_places,
         std::vector<Eigen::Matrix<int, dim, 1>> input_weights,
         std::vector<PlacePoint>                 output_places,
         std::vector<Eigen::Matrix<int, dim, 1>> output_weights,
@@ -32,7 +33,7 @@ template <int dim> class TransitionColor : public TransitionBase {
                                   func              = nullptr,
         std::function<bool(void)> is_completed_func = nullptr,
         int                       priority          = 0)
-        : TransitionBase(priority)
+        : TransitionBase(priority, ID)
     {
         this->m_func              = func;
         this->m_is_completed_func = is_completed_func;
@@ -41,12 +42,39 @@ template <int dim> class TransitionColor : public TransitionBase {
         this->m_input_weights     = input_weights;
         this->m_output_weights    = output_weights;
     }
+
+  public:
     ~TransitionColor(){};
+
+    static std::shared_ptr<TransitionColor<dim>> get_instance(unsigned int ID,
+        std::vector<PlacePoint>                 input_places,
+        std::vector<Eigen::Matrix<int, dim, 1>> input_weights,
+        std::vector<PlacePoint>                 output_places,
+        std::vector<Eigen::Matrix<int, dim, 1>> output_weights,
+        std::function<void(std::queue<std::any>&&, std::queue<std::any>&)>
+                                  func              = nullptr,
+        std::function<bool(void)> is_completed_func = nullptr,
+        int                       priority          = 0)
+    {
+        if (m_instances.find(ID) == m_instances.end()) {
+            auto pointer = std::shared_ptr<TransitionColor<dim>>(new TransitionColor<dim>(ID,
+                input_places, input_weights, output_places, output_weights,
+                func, is_completed_func, priority));
+            m_instances.insert(
+                std::pair<unsigned int, std::shared_ptr<TransitionColor<dim>>>(
+                    ID, pointer));
+            return pointer;
+        }
+        else {
+            auto pointer = m_instances.at(ID);
+            return pointer;
+        }
+    }
 
     bool is_ready()
     {
         if (m_is_completed_func) {  // 完毕状态才可进行下一次激发
-            for (int i = 0; i < m_input_places.size(); ++i) {
+            for (unsigned int i = 0; i < m_input_places.size(); ++i) {
                 auto res =
                     m_input_places[i]->vector_size() - m_input_weights[i];
                 if ((res.array() < 0).any())  // 存在小于的情况
@@ -61,10 +89,10 @@ template <int dim> class TransitionColor : public TransitionBase {
     void run()
     {
         if (this->m_func == nullptr) {  // 无挂载
-            for (int i = 0; i < m_input_places.size(); ++i) {
+            for (unsigned  int i = 0; i < m_input_places.size(); ++i) {
                 m_input_places[i]->output_tokens(m_input_weights[i]);
             }
-            for (int j = 0; j < m_output_places.size(); ++j) {
+            for (unsigned  int j = 0; j < m_output_places.size(); ++j) {
                 m_output_places[j]->input_tokens(m_output_weights[j], {});
             }
         }
@@ -72,7 +100,7 @@ template <int dim> class TransitionColor : public TransitionBase {
             // queue_clear(m_input_tokens);
             // queue_clear(m_output_tokens);
 
-            for (int i = 0; i < m_input_places.size(); ++i) {
+            for (unsigned  int i = 0; i < m_input_places.size(); ++i) {
                 m_input_tokens = std::move(
                     m_input_places[i]->output_tokens(m_input_weights[i]));
             }
@@ -84,7 +112,7 @@ template <int dim> class TransitionColor : public TransitionBase {
                 this->completed_flag = false;
             }
             else {
-                for (int j = 0; j < m_output_places.size(); ++j) {
+                for (unsigned  int j = 0; j < m_output_places.size(); ++j) {
                     m_output_places[j]->input_tokens(
                         m_output_weights[j], std::move(m_output_tokens));
                 }
@@ -97,7 +125,7 @@ template <int dim> class TransitionColor : public TransitionBase {
         {
             if (this->m_is_completed_func()) {
                 // 将函数输出输给对应的place对象
-                for (int j = 0; j < m_output_places.size(); ++j) {
+                for (unsigned  int j = 0; j < m_output_places.size(); ++j) {
                     m_output_places[j]->input_tokens(
                         m_output_weights[j], std::move(m_output_tokens));
                 }
@@ -113,3 +141,6 @@ template <int dim> class TransitionColor : public TransitionBase {
         }
     }
 };
+
+template<int dim>
+std::map<unsigned int, std::shared_ptr<TransitionColor<dim>>> TransitionColor<dim>::m_instances;

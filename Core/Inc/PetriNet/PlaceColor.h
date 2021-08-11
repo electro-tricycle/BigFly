@@ -10,47 +10,80 @@
 #include "Eigen/Dense"
 #include "PetriNet/PlaceVectorBase.h"
 #include <any>
+#include <map>
+#include <memory>
+#include <queue>
 #include <string>
 #include <tuple>
-#include <queue>
 
-template <int dim>
-class PlaceColor : public PlaceVectorBase<dim>{
+template <int dim> class PlaceColor : public PlaceVectorBase<dim> {
   private:
-    std::string name = "";
-    // Eigen::Vector3i      cl;
     Eigen::Matrix<int, dim, 1>            cl;  // dim代表颜色维度数目
     std::array<std::queue<std::any>, dim> array;  // 一共有dim组存数据的queue
-
-  public:
-    PlaceColor() {}
-    // 命名构造
-    PlaceColor(std::string name)
-    {
-        this->name = name;
-    }
-    ~PlaceColor() {}
-    // // 禁止复制拷贝
-    PlaceColor(const PlaceColor& other) = delete;
-    PlaceColor& operator=(const PlaceColor& other) = delete;
-
+    static std::map<unsigned int, std::shared_ptr<PlaceColor<dim>>> m_instances;
+    PlaceColor(unsigned int ID) : PlaceVectorBase<dim>(ID) {}
     // PlaceColor传递数值构造
-    PlaceColor(Eigen::Matrix<int, dim, 1>       data,
+    PlaceColor(unsigned int                     ID,
+        Eigen::Matrix<int, dim, 1>              data,
         std::array<std::queue<std::any>, dim>&& inputs)
+        : PlaceVectorBase<dim>(ID)
     {
         this->cl    = std::move(data);
         this->array = std::move(inputs);
     }
-    // //返回PlaceColor中的颜色token
-    // Eigen::Vector3i getVector()
-    // {
-    //     return cl;
-    // }
-    // //返回PlaceColor中的队列
-    // std::queue<std::any> getArray()
-    // {
-    //     return array;
-    // }
+
+  public:
+    static std::shared_ptr<PlaceColor<dim>> get_instance(unsigned int ID)
+    {
+        if (m_instances.find(ID) == m_instances.end()) {
+            // 没找到
+            auto pointer =
+                std::shared_ptr<PlaceColor<dim>>(new PlaceColor<dim>(ID));
+            m_instances.insert(
+                std::pair<unsigned int, std::shared_ptr<PlaceColor<dim>>>(
+                    ID, pointer));
+            return pointer;
+        }
+        else {
+            auto pointer = m_instances.at(ID);
+            return pointer;
+        }
+    }
+
+    static std::shared_ptr<PlaceColor<dim>> get_instance(unsigned int ID,
+        Eigen::Matrix<int, dim, 1>                                    data,
+        std::array<std::queue<std::any>, dim>&&                       inputs)
+    {
+        if (m_instances.find(ID) == m_instances.end()) {
+            // 没找到
+            auto pointer =
+                std::shared_ptr<PlaceColor<dim>>(new PlaceColor<dim>(ID, data, std::move(inputs)));
+            m_instances.insert(
+                std::pair<unsigned int, std::shared_ptr<PlaceColor<dim>>>(
+                    ID, pointer));
+            return pointer;
+        }
+        else {
+            auto pointer = m_instances.at(ID);
+            return pointer;
+        }
+    }
+
+    static void del_instance(unsigned int ID)
+    {
+        for (auto iter = m_instances.begin(); iter != m_instances.end();
+             ++iter) {
+            if ((*iter).first == ID) {
+                m_instances.erase(iter);
+                break;
+            }
+        }
+    }
+
+    ~PlaceColor() {}
+    // // 禁止复制拷贝
+    PlaceColor(const PlaceColor& other) = delete;
+    PlaceColor& operator=(const PlaceColor& other) = delete;
 
     // PlaceBase 接口
     int size()
@@ -102,3 +135,6 @@ class PlaceColor : public PlaceVectorBase<dim>{
     }
 };
 
+template<int dim>
+std::map<unsigned int, std::shared_ptr<PlaceColor<dim>>>
+    PlaceColor<dim>::m_instances;

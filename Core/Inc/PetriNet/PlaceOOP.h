@@ -9,20 +9,69 @@
 #define INC_PETRINET_PLACEOOP_H_
 
 #include "PlaceBase.h"
-#include <vector>
+#include <map>
+#include <memory>
+#include <queue>
 #include <string>
+#include <vector>
 
-template <typename T> class PlaceOOP : public PlaceBase {
+class PlaceOOP : public PlaceBase {
   private:
-    std::queue<std::any> array;
-    std::string          name;
+    std::queue<std::any>                                     array;
+    static std::map<unsigned int, std::shared_ptr<PlaceOOP>> m_instances;
+    PlaceOOP(unsigned int ID) : PlaceBase(ID){};
+    PlaceOOP(unsigned int ID, std::queue<std::any>&& array) : PlaceBase(ID)
+    {
+        this->array = std::move(array);
+    };
 
   public:
-    PlaceOOP(){};
-    PlaceOOP(std::string name)
+    PlaceOOP(const PlaceOOP&) = delete;
+    PlaceOOP& operator=(const PlaceOOP&) = delete;
+
+    static std::shared_ptr<PlaceOOP> get_instance(unsigned int ID)
     {
-        this->name = name;
-    };
+        if (m_instances.find(ID) == m_instances.end()) {
+            // 没找到
+            auto pointer = std::shared_ptr<PlaceOOP>(new PlaceOOP(ID));
+            m_instances.insert(
+                std::pair<unsigned int, std::shared_ptr<PlaceOOP>>(
+                    ID, pointer));
+            return pointer;
+        }
+        else {
+            auto pointer = m_instances.at(ID);
+            return pointer;
+        }
+    }
+
+    static std::shared_ptr<PlaceOOP> get_instance(unsigned int ID,
+        std::queue<std::any>&&                                 array)
+    {
+        if (m_instances.find(ID) == m_instances.end()) {
+            // 没找到
+            auto pointer = std::shared_ptr<PlaceOOP>(new PlaceOOP(ID, std::move(array)));
+            m_instances.insert(
+                std::pair<unsigned int, std::shared_ptr<PlaceOOP>>(
+                    ID, pointer));
+            return pointer;
+        }
+        else {
+            auto pointer = m_instances.at(ID);
+            return pointer;
+        }
+    }
+
+    static void del_instance(unsigned int ID)
+    {
+        for (auto iter = m_instances.begin(); iter != m_instances.end();
+             ++iter) {
+            if ((*iter).first == ID) {
+                m_instances.erase(iter);
+                break;
+            }
+        }
+    }
 
     void input_tokens(std::any&& input)
     {
@@ -36,15 +85,6 @@ template <typename T> class PlaceOOP : public PlaceBase {
         return output;
     }
 
-    // std::any output_tokens(std::vector<int>)
-    // {
-    //     assert(false);  // 没有实现的函数
-    // }
-    // std::any peek(unsigned int idx = 0)
-    // {
-        
-    // }
-
     int size()
     {
         return this->array.size();
@@ -52,5 +92,7 @@ template <typename T> class PlaceOOP : public PlaceBase {
 
     virtual ~PlaceOOP(){};
 };
+
+std::map<unsigned int, std::shared_ptr<PlaceOOP>> PlaceOOP::m_instances;
 
 #endif /* INC_PETRINET_PLACEOOP_H_ */

@@ -29,10 +29,13 @@
 #include <any>
 #include "PetriNet/Transition.h"
 #include "PetriNet/Place.h"
+#include "PetriNet/PlaceOOP.h"
+#include "PetriNet/PlaceINT.h"
 #include "PetriNet/PlaceColor.h"
 #include "PetriNet/PlaceCLint.h"
 #include "PetriNet/TransitionBase.h"
 #include "PetriNet/TransitionColor.h"
+#include "PetriNEt/TransitionOOP.h"
 #include "PetriNet/Net.h"
 /* USER CODE END Includes */
 
@@ -76,8 +79,14 @@ static void MX_GPIO_Init(void);
 
 int main(void)
 {
-	PlaceColor<3> a{};
-	PlaceCLInt<4> b{};
+//	PlaceColor<3> a{21399};
+//	PlaceCLInt<4> b{1234};
+	PlaceColor<4>::get_instance(323);
+	PlaceCLInt<5>::get_instance(3233);
+	PlaceOOP::get_instance(212);
+	Place::get_instance(3234);
+	TransitionColor<4>::get_instance(32, {}, {}, {}, {});
+	TransitionOOP::get_instance(22, {}, {}, {}, {});
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */

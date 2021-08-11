@@ -12,6 +12,7 @@
 #include "TransitionBase.h"
 #include <any>
 #include <functional>
+#include <map>
 #include <memory>
 #include <queue>
 #include <vector>
@@ -36,17 +37,18 @@ class TransitionOOP : public TransitionBase {
     std::queue<std::any>    m_output_tokens;
     std::function<void(std::queue<std::any>&&, std::queue<std::any>&)> m_func;
     std::function<bool(void)> m_is_completed_func;
+    static std::map<unsigned int, std::shared_ptr<TransitionOOP>> m_instances;
 
-  public:
-    TransitionOOP(std::vector<PlacePoint> input_places,
-        std::vector<int>                  input_weights,
-        std::vector<PlacePoint>           output_places,
-        std::vector<int>                  output_weights,
+    TransitionOOP(unsigned int  ID,
+        std::vector<PlacePoint> input_places,
+        std::vector<int>        input_weights,
+        std::vector<PlacePoint> output_places,
+        std::vector<int>        output_weights,
         std::function<void(std::queue<std::any>&&, std::queue<std::any>&)>
                                   func              = nullptr,
         std::function<bool(void)> is_completed_func = nullptr,
         int                       priority          = 0)
-        : TransitionBase(priority)
+        : TransitionBase(priority, ID)
     {
         this->m_func              = func;
         this->m_is_completed_func = is_completed_func;
@@ -55,12 +57,55 @@ class TransitionOOP : public TransitionBase {
         this->m_input_weights     = input_weights;
         this->m_output_weights    = output_weights;
     };
+
+  public:
+    static std::shared_ptr<TransitionOOP> get_instance(unsigned int ID,
+        std::vector<PlacePoint> input_places,
+        std::vector<int>        input_weights,
+        std::vector<PlacePoint> output_places,
+        std::vector<int>        output_weights,
+        std::function<void(std::queue<std::any>&&, std::queue<std::any>&)>
+                                  func              = nullptr,
+        std::function<bool(void)> is_completed_func = nullptr,
+        int                       priority          = 0)
+    {
+        if (m_instances.find(ID) == m_instances.end()) {
+            auto pointer = std::shared_ptr<TransitionOOP>(new TransitionOOP(ID,
+                input_places, input_weights, output_places, output_weights,
+                func, is_completed_func, priority));
+            m_instances.insert(
+                std::pair<unsigned int, std::shared_ptr<TransitionOOP>>(
+                    ID, pointer));
+            return pointer;
+        }
+        else {
+            auto pointer = m_instances.at(ID);
+            return pointer;
+        }
+    }
+    static std::shared_ptr<TransitionOOP> get_instance(unsigned int ID)
+    {
+        auto pointer = m_instances.at(ID);
+        return pointer;
+    }
+    static void del_instance(unsigned int ID)
+    {
+        for (auto iter = m_instances.begin(); iter != m_instances.end();
+             ++iter) {
+            if ((*iter).first == ID) {
+                m_instances.erase(iter);
+                break;
+            }
+        }
+    }
+    TransitionOOP(const TransitionOOP&) = delete;
+    TransitionOOP& operator=(const TransitionOOP&) = delete;
     ~TransitionOOP(){};
 
     bool is_ready()
     {
         if (m_is_completed_func) {  // 完毕状态才可进行下一次激发
-            for (int i = 0; i < m_input_places.size(); ++i) {
+            for (unsigned int i = 0; i < m_input_places.size(); ++i) {
                 if (m_input_places[i]->size() < m_input_weights[i])
                     return false;
             }
@@ -75,12 +120,12 @@ class TransitionOOP : public TransitionBase {
     {
         if (this->m_func == nullptr) {  // 没有挂载函数
             // 取出对于数量的tokens
-            for (int i = 0; i < m_input_places.size(); ++i) {
+            for (unsigned int i = 0; i < m_input_places.size(); ++i) {
                 for (int j = 0; j < m_input_weights[i]; ++j)
                     m_input_places[i]->output_tokens();
             }
             //输入对应数量的tokens, 因为没有挂载函数，所以生成空值std::any
-            for (int i = 0; i < m_output_places.size(); ++i) {
+            for (unsigned int i = 0; i < m_output_places.size(); ++i) {
                 for (int j = 0; j < m_output_weights[i]; ++j)
                     m_output_places[i]->input_tokens(std::move(std::any{}));
             }
@@ -90,7 +135,7 @@ class TransitionOOP : public TransitionBase {
             queue_clear(m_input_tokens);
             queue_clear(m_output_tokens);
             // 取出对应数量的tokens
-            for (int i = 0; i < m_input_places.size(); ++i) {
+            for (unsigned int i = 0; i < m_input_places.size(); ++i) {
                 for (int j = 0; j < m_input_weights[i]; ++j)
                     m_input_tokens.push(std::move(
                         m_input_places[i]
@@ -105,7 +150,7 @@ class TransitionOOP : public TransitionBase {
                 this->completed_flag = false;
             }
             else {  // 否则直接输出
-                for (int i = 0; i < m_output_places.size(); ++i) {
+                for (unsigned int i = 0; i < m_output_places.size(); ++i) {
                     for (int j = 0; j < m_output_weights[i]; ++j) {
                         m_output_places[i]->input_tokens(
                             std::move(m_output_tokens.front()));
@@ -122,7 +167,7 @@ class TransitionOOP : public TransitionBase {
         {
             if (this->m_is_completed_func()) {
                 // 将函数输出输给对应的place对象
-                for (int i = 0; i < m_output_places.size(); ++i) {
+                for (unsigned int i = 0; i < m_output_places.size(); ++i) {
                     for (int j = 0; j < m_output_weights[i]; ++j) {
                         m_output_places[i]->input_tokens(
                             std::move(m_output_tokens.front()));
@@ -141,5 +186,8 @@ class TransitionOOP : public TransitionBase {
         }
     }
 };
+
+std::map<unsigned int, std::shared_ptr<TransitionOOP>>
+    TransitionOOP::m_instances;
 
 #endif /* INC_PETRINET_TRANSITIONOOP_H_ */
