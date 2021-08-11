@@ -27,6 +27,7 @@ class TransitionOOP : public TransitionBase {
     using PlacePoint = std::shared_ptr<PlaceBase>;
 
   private:
+    bool                    completed_flag = true;
     std::vector<PlacePoint> m_input_places;
     std::vector<PlacePoint> m_output_places;
     std::vector<int>        m_input_weights;
@@ -34,6 +35,7 @@ class TransitionOOP : public TransitionBase {
     std::queue<std::any>    m_input_tokens;
     std::queue<std::any>    m_output_tokens;
     std::function<void(std::queue<std::any>&&, std::queue<std::any>&)> m_func;
+    std::function<bool(void)> m_is_completed_func;
 
   public:
     TransitionOOP(std::vector<PlacePoint> input_places,
@@ -41,25 +43,32 @@ class TransitionOOP : public TransitionBase {
         std::vector<PlacePoint>           output_places,
         std::vector<int>                  output_weights,
         std::function<void(std::queue<std::any>&&, std::queue<std::any>&)>
-            func     = nullptr,
-        int priority = 0)
+                                  func              = nullptr,
+        std::function<bool(void)> is_completed_func = nullptr,
+        int                       priority          = 0)
         : TransitionBase(priority)
     {
-        this->m_func           = func;
-        this->m_input_places   = input_places;
-        this->m_output_places  = output_places;
-        this->m_input_weights  = input_weights;
-        this->m_output_weights = output_weights;
+        this->m_func              = func;
+        this->m_is_completed_func = is_completed_func;
+        this->m_input_places      = input_places;
+        this->m_output_places     = output_places;
+        this->m_input_weights     = input_weights;
+        this->m_output_weights    = output_weights;
     };
     ~TransitionOOP(){};
 
     bool is_ready()
     {
-        for (int i = 0; i < m_input_places.size(); ++i) {
-            if (m_input_places[i]->size() < m_input_weights[i])
-                return false;
+        if (m_is_completed_func) {  // 完毕状态才可进行下一次激发
+            for (int i = 0; i < m_input_places.size(); ++i) {
+                if (m_input_places[i]->size() < m_input_weights[i])
+                    return false;
+            }
+            return true;
         }
-        return true;
+        else {
+            return false;
+        }
     }
 
     void run()
@@ -91,14 +100,44 @@ class TransitionOOP : public TransitionBase {
             // 运行挂载的函数，函数将输出值填充进m_output_tokens
             m_func(std::move(m_input_tokens), m_output_tokens);
 
-            // 将函数输出输给对应的place对象
-            for (int i = 0; i < m_output_places.size(); ++i) {
-                for (int j = 0; j < m_output_weights[i]; ++j) {
-                    m_output_places[i]->input_tokens(
-                        std::move(m_output_tokens.front()));
-                    m_output_tokens.pop();
+            if (this->m_is_completed_func !=
+                nullptr) {  // 有挂载completed函数的才需要
+                this->completed_flag = false;
+            }
+            else {  // 否则直接输出
+                for (int i = 0; i < m_output_places.size(); ++i) {
+                    for (int j = 0; j < m_output_weights[i]; ++j) {
+                        m_output_places[i]->input_tokens(
+                            std::move(m_output_tokens.front()));
+                        m_output_tokens.pop();
+                    }
                 }
             }
+        }
+    }
+
+    bool is_completed()
+    {
+        if (!this->completed_flag)  // 有挂载且为假的才需要判断
+        {
+            if (this->m_is_completed_func()) {
+                // 将函数输出输给对应的place对象
+                for (int i = 0; i < m_output_places.size(); ++i) {
+                    for (int j = 0; j < m_output_weights[i]; ++j) {
+                        m_output_places[i]->input_tokens(
+                            std::move(m_output_tokens.front()));
+                        m_output_tokens.pop();
+                    }
+                }
+                this->completed_flag = true;
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        else {
+            return true;
         }
     }
 };

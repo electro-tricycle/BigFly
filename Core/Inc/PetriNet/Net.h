@@ -9,6 +9,7 @@
 class Net {
   private:
     std::list<std::shared_ptr<TransitionBase>> m_transitions;
+    std::list<std::shared_ptr<TransitionBase>> m_running_transitions;
     Net();
     Net(const Net&) = delete;
     Net& operator=(const Net&) = delete;
