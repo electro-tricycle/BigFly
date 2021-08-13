@@ -14,8 +14,6 @@ class Net {
     Net(const Net&) = delete;
     Net& operator=(const Net&) = delete;
     ~Net();
-
-  private:
     static Net m_Instance;
 
   public:
@@ -28,4 +26,4 @@ class Net {
     void run();
 };
 
-
+Net Net::m_Instance;
