@@ -9,6 +9,7 @@ class TransitionCMP {
     }
 };
 
+
 Net Net::m_Instance;
 Net::Net(/* args */) {}
 

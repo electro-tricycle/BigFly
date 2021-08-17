@@ -7,7 +7,7 @@
 #include <queue>
 #include <vector>
 
-void queue_clear(std::queue<std::any>& q);
+extern void queue_clear(std::queue<std::any>& q);
 
 template <int dim> class TransitionColor : public TransitionBase {
     using PlacePoint = std::shared_ptr<PlaceVectorBase<dim>>;

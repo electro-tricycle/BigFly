@@ -1,5 +1,8 @@
 #pragma once
 
+#include <any>
+#include <queue>
+
 class TransitionBase {
   private:
     int          prioriy = 0;
@@ -24,3 +27,5 @@ class TransitionBase {
         return this->ID;
     }
 };
+
+void queue_clear(std::queue<std::any>& q);

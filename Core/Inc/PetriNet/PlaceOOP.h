@@ -93,6 +93,4 @@ class PlaceOOP : public PlaceBase {
     virtual ~PlaceOOP(){};
 };
 
-std::map<unsigned int, std::shared_ptr<PlaceOOP>> PlaceOOP::m_instances;
-
 #endif /* INC_PETRINET_PLACEOOP_H_ */

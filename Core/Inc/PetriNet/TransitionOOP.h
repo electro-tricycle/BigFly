@@ -17,11 +17,6 @@
 #include <queue>
 #include <vector>
 
-void queue_clear(std::queue<std::any>& q)
-{
-    std::queue<std::any> empty;
-    std::swap(empty, q);
-}
 
 // 变迁类
 class TransitionOOP : public TransitionBase {
@@ -187,7 +182,7 @@ class TransitionOOP : public TransitionBase {
     }
 };
 
-std::map<unsigned int, std::shared_ptr<TransitionOOP>>
-    TransitionOOP::m_instances;
+//std::map<unsigned int, std::shared_ptr<TransitionOOP>>
+//    TransitionOOP::m_instances;
 
 #endif /* INC_PETRINET_TRANSITIONOOP_H_ */

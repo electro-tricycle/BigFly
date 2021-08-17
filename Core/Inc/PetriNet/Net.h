@@ -26,4 +26,4 @@ class Net {
     void run();
 };
 
-Net Net::m_Instance;
+
